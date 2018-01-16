@@ -8,9 +8,12 @@ def Main():
     mySocket = socket.socket()
     mySocket.connect((host, port))
 
+    print("Connected with:- " + str(host))
+
     message = input(" -> ")
 
-    while message != 'q':
+    while True:
+
         mySocket.send(message.encode())
         data = mySocket.recv(1024).decode()
 
