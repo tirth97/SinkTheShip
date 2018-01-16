@@ -1,28 +1,26 @@
 import socket
-
+import sys
 
 def Main():
-    host = "127.0.0.1"
+
+    soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    host = socket.gethostname()
     port = 5002
 
-    mySocket = socket.socket()
-    mySocket.connect((host, port))
-
-    print("Connected with:- " + str(host))
-
-    message = input(" -> ")
+    try:
+        soc.connect((host, port))
+    except:
+        print("Connection error")
+        sys.exit()
 
     while True:
 
-        mySocket.send(message.encode())
-        data = mySocket.recv(1024).decode()
+        message = input("Write to server:- ")
+        soc.sendall(message.encode("utf8"))
+        if soc.recv(5120).decode("utf8") == "-":
+            pass        # null operation
 
-        print('Received from server: ' + data)
+    soc.send(b'!q')
 
-        message = input(" -> ")
-
-    mySocket.close()
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     Main()
