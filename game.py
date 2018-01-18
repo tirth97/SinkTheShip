@@ -33,9 +33,9 @@ game_status_color = '#9d99fc'
 player_status_color = '#a50415'
 player_color = '#f0e1d2'
 game_name_color = '#00ff99'
-hit_color = '#f0a000'
-miss_color = '#00f056'
-ship_color = '#00eeff'
+hit_color = '#f01200'
+miss_color = '#00e1aa'
+ship_color = '#a0b2c4'
 
 
 def disable_ready():
@@ -101,20 +101,23 @@ def checkOperationToPerform():
             pass
             # Game Over Here
 
+    """
+    This instruction is received from server informing where hit or miss has occurred
+    instruction starts with whether hit or miss has occurred
+    followed by a number indicating which grid at client side should be reflected
+    (2 for opponent 1 for player) followed by 2 numbers indicating position of attack
+    followed by 2 numbers indicating number of ships sank of player 1(player) and 2(enemy) respectively
+    """
+
 
 def performOperation(instruction):
     global clientsocket
     if instruction == 'attack':
-        gamestat.config(text="    Attack, It's your turn    ")
+        gamestat.config(text="ATTACK!")
         enable_enemy_grid()
     elif instruction == 'wait':
-        gamestat.config(text="    Wait It's your enemy's turn    ")
+        gamestat.config(text="HOLD!")
         disable_enemy_grid()
-    # This instruction is received from server informing where hit or miss has occurred
-    # instruction starts with whether hit or miss has occurred
-    # followed by a number indicating which grid at client side should be reflected
-    # (2 for opponent 1 for player) followed by 2 numbers indicating position of attack
-    # followed by 2 numbers indicating number of ships sank of player 1(player) and 2(enemy) respectively
     elif instruction.startswith('hit'):
         # Change GUI accordingly to RED as it HIT.
         # Check if this is HIT on player or opponent
@@ -128,8 +131,8 @@ def performOperation(instruction):
             x = int(instruction[4])
             y = int(instruction[5])
             buttons_enemy[x][y].configure(bg=hit_color)
-        playerstat.configure(text="Your Ship destroyed - " + instruction[6])
-        enemystat.configure(text="Enemy's Ship destroyed - " + instruction[7])
+        playerstat.configure(text="Your Ships Destroyed - " + instruction[6])
+        enemystat.configure(text="Opponent's Ships Destroyed - " + instruction[7])
     elif instruction.startswith('miss'):
         # Change GUI accordingly to LIGHT BLUE as it's MISS.
         # Check if this is MISS on player or opponent
@@ -143,29 +146,26 @@ def performOperation(instruction):
             x = int(instruction[5])
             y = int(instruction[6])
             buttons_enemy[x][y].configure(bg=miss_color)
-        playerstat.configure(text="Your Ship destroyed - " + instruction[7])
-        enemystat.configure(text="Enemy's Ship destroyed - " + instruction[8])
+        playerstat.configure(text="Your Ships destroyed - " + instruction[7])
+        enemystat.configure(text="Opponent's Ships destroyed - " + instruction[8])
     elif instruction == 'win':
         # Game over and player wins the game
-        gamestat.config(text="    You won  !!!   ")
+        gamestat.config(text="You Conquered the Sea")
         clientsocket.close()
         disable_enemy_grid()  # Disables enemy grid when player won.
         return
     elif instruction == 'lost':
         # Game over and player lost the game
-        gamestat.config(text="   Sorry, You lost the game, Try again.  ")
+        gamestat.config(text="You're Drowned. Rest in Peace!")
         clientsocket.close()
         return
 
 
 def send_ready():
-    global clientsocket, horizontal_button, vertical_button, ship_locations, reset_button
+    global clientsocket, ship_locations
     if ready_flag == False:
         gamestat.config(text="Select ship positions")
         return
-    horizontal_button['state'] = 'disabled'
-    vertical_button['state'] = 'disabled'
-    reset_button['state'] = 'disabled'
     disable_ready()
 
     ships = ''
