@@ -19,9 +19,9 @@ buttons_player = []
 buttons_enemy = []
 
 ready_button = None
-l_game_status = None
-l_player_status = None
-l_enemy_status = None
+gamestat = None
+playerstat = None
+enemystat = None
 
 ship_locations = []  # Player's ships' locations
 direction = 'h'
@@ -105,10 +105,10 @@ def checkOperationToPerform():
 def performOperation(instruction):
     global clientsocket
     if instruction == 'attack':
-        l_game_status.config(text="    Attack, It's your turn    ")
+        gamestat.config(text="    Attack, It's your turn    ")
         enable_enemy_grid()
     elif instruction == 'wait':
-        l_game_status.config(text="    Wait It's your enemy's turn    ")
+        gamestat.config(text="    Wait It's your enemy's turn    ")
         disable_enemy_grid()
     # This instruction is received from server informing where hit or miss has occurred
     # instruction starts with whether hit or miss has occurred
@@ -128,8 +128,8 @@ def performOperation(instruction):
             x = int(instruction[4])
             y = int(instruction[5])
             buttons_enemy[x][y].configure(bg=hit_color)
-        l_player_status.configure(text="Your Ship destroyed - " + instruction[6])
-        l_enemy_status.configure(text="Enemy's Ship destroyed - " + instruction[7])
+        playerstat.configure(text="Your Ship destroyed - " + instruction[6])
+        enemystat.configure(text="Enemy's Ship destroyed - " + instruction[7])
     elif instruction.startswith('miss'):
         # Change GUI accordingly to LIGHT BLUE as it's MISS.
         # Check if this is MISS on player or opponent
@@ -143,17 +143,17 @@ def performOperation(instruction):
             x = int(instruction[5])
             y = int(instruction[6])
             buttons_enemy[x][y].configure(bg=miss_color)
-        l_player_status.configure(text="Your Ship destroyed - " + instruction[7])
-        l_enemy_status.configure(text="Enemy's Ship destroyed - " + instruction[8])
+        playerstat.configure(text="Your Ship destroyed - " + instruction[7])
+        enemystat.configure(text="Enemy's Ship destroyed - " + instruction[8])
     elif instruction == 'win':
         # Game over and player wins the game
-        l_game_status.config(text="    You won  !!!   ")
+        gamestat.config(text="    You won  !!!   ")
         clientsocket.close()
         disable_enemy_grid()  # Disables enemy grid when player won.
         return
     elif instruction == 'lost':
         # Game over and player lost the game
-        l_game_status.config(text="   Sorry, You lost the game, Try again.  ")
+        gamestat.config(text="   Sorry, You lost the game, Try again.  ")
         clientsocket.close()
         return
 
@@ -161,7 +161,7 @@ def performOperation(instruction):
 def send_ready():
     global clientsocket, horizontal_button, vertical_button, ship_locations, reset_button
     if ready_flag == False:
-        l_game_status.config(text="Select ship positions")
+        gamestat.config(text="Select ship positions")
         return
     horizontal_button['state'] = 'disabled'
     vertical_button['state'] = 'disabled'
@@ -178,21 +178,12 @@ def send_ready():
     ships = ships[0:-1]
     clientsocket.send(ships)
 
-    l_game_status.configure(text='Waiting for oppenent to be ready!')
+    gamestat.configure(text='Waiting for oppenent to be ready!')
     disable_player_grid()
     my_thread = threading.Thread(target=getAttackInstruction)
     my_thread.start()
     my_thread = threading.Thread(target=checkOperationToPerform)
     my_thread.start()
-
-
-def resetshipposition():
-    global shipsettleflag, ready_flag, l_game_status, ship_locations
-    ship_locations = []
-    ready_flag = False
-    shipsettleflag = 5
-    l_game_status.config(text='Select ship of 5 blocks')
-    enable_player_grid()
 
 
 def player_board_fn(x, y):
@@ -203,31 +194,31 @@ def set_ship_position(x, y):
     global shipsettleflag
     global ready_flag
 
-    # validates x & y and sets 5 block of ship vertically
+    # validates x & y and sets 5 block of ship
     if shipsettleflag == 5:
         if set_ship(5, x, y):
             shipsettleflag = shipsettleflag - 1
-            l_game_status.config(text="Select ship of 4 blocks")
-    # validates x & y and sets 4 block of ship vertically
+            gamestat.config(text="Select ship of 4 blocks")
+    # validates x & y and sets 4 block of ship
     elif shipsettleflag == 4:
         if set_ship(4, x, y):
             shipsettleflag = shipsettleflag - 1
-            l_game_status.config(text="Select ship of 3 blocks")
-    # validates x & y and sets 3 block of ship vertically
+            gamestat.config(text="Select ship of 3 blocks")
+    # validates x & y and sets 3 block of ship
     elif shipsettleflag == 3:
         if set_ship(3, x, y):
             shipsettleflag = shipsettleflag - 1
-            l_game_status.config(text="Select ship of 2 blocks")
-    # validates x & y and sets 2 block of ship vertically
+            gamestat.config(text="Select ship of 2 blocks")
+    # validates x & y and sets 2 block of ship
     elif shipsettleflag == 2:
         if set_ship(2, x, y):
             shipsettleflag = shipsettleflag - 1
-            l_game_status.config(text="Select ship of 1 blocks")
-    # sets 1 block of ship vertically
+            gamestat.config(text="Select ship of 1 blocks")
+    # sets 1 block of ship
     elif shipsettleflag == 1:
         if set_ship(1, x, y):
             shipsettleflag = shipsettleflag - 1
-            l_game_status.config(text="Ready")
+            gamestat.config(text="Let's Play!")
             ready_flag = True
 
 
@@ -280,20 +271,14 @@ def is_already_in_list(location):
                 return True
     return False
 
-
-def setvertical():
-    global horizontal_button, direction
-    direction = 'v'
-    vertical_button['state'] = 'disabled'
-    horizontal_button['state'] = 'normal'
-
-
-def sethorizontal():
-    global vertical_button, direction
-    horizontal_button['state'] = 'disabled'
-    vertical_button['state'] = 'normal'
-    direction = 'h'
-
+def changeorientation(event=None):
+    global direction
+    if direction == 'v':
+        direction = 'h'
+        gamestat.configure(text='Set ships horizontally')
+    else:
+        direction = 'v'
+        gamestat.configure(text='Set ships vertically')
 
 def enemy_board_fn(x, y):
     global button_disable_flags
@@ -304,29 +289,29 @@ def enemy_board_fn(x, y):
 
 
 def connect_to_server():
-    global clientsocket, reset_button, vertical_button
+    global clientsocket
     try:
         clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         clientsocket.connect((ip_of_server, port))
-        l_game_status.configure(text=' Connecting to your opponent...')
+        gamestat.configure(text="Let's Play!")
 
 
         server_ready = clientsocket.recv(BUFFER)
 
         enable_player_grid()
         enable_ready()
-        reset_button['state'] = 'normal'
-        vertical_button['state'] = 'normal'
-        l_game_status.config(text="Select ship of 4 blocks")
+        #reset_button['state'] = 'normal'
+        #vertical_button['state'] = 'normal'
+        gamestat.config(text="Select ship of 5 blocks")
     except Exception as e:
         print e
         print e.message
         print e.args
-        l_game_status.configure(text="Connection cannot be established..")
+        gamestat.configure(text="Connection cannot be established..")
 
 
 try:
-    ip_of_server = "192.168.43.43"
+    ip_of_server = " 172.16.16.184"
     port = 5250
 except:
     print "Unable to connect. IP or Port not available."
@@ -345,13 +330,13 @@ fr_upper = tk.Frame(fr_main, bg=bg_color)
 fr_upper.grid(row=0, column=0)
 
 # Statuses
-l_player_status = tk.Label(fr_upper, text="", font=("Helvetica", 15), bg=bg_color, fg=player_status_color)
-l_enemy_status = tk.Label(fr_upper, text="", font=("Helvetica", 15), bg=bg_color, fg=player_status_color)
-l_game_status = tk.Label(fr_upper, text="Game Status", font=("Helvetica", 15), bg=bg_color, fg=game_status_color)
+playerstat = tk.Label(fr_upper, text="", font=("Helvetica", 15), bg=bg_color, fg=player_status_color)
+enemystat = tk.Label(fr_upper, text="", font=("Helvetica", 15), bg=bg_color, fg=player_status_color)
+gamestat = tk.Label(fr_upper, text="Let's Play!", font=("Helvetica", 15), bg=bg_color, fg=game_status_color)
 
-l_player_status.grid(row=0, column=0)
-l_game_status.grid(row=0, column=2, columnspan=2, pady=3, padx=10)
-l_enemy_status.grid(row=0, column=5)
+playerstat.grid(row=0, column=0)
+gamestat.grid(row=0, column=2, columnspan=2, pady=3, padx=10)
+enemystat.grid(row=0, column=5)
 
 fr_lower = tk.Frame(fr_main, bg=bg_color)
 fr_lower.grid(row=1, column=0, rowspan=10)
@@ -375,15 +360,6 @@ fr_2.grid(row=0, column=5, columnspan=2)
 ready_button = tk.Button(fr_2, text="PLAY!", height=3, width=12, command=send_ready)
 ready_button.grid(row=0, column=0, rowspan=4, pady=100, padx=10)
 disable_ready()
-horizontal_button = tk.Button(fr_2, text="Horizontal", height=2, width=10, command=sethorizontal)
-horizontal_button.grid(row=4, column=0, padx=15, pady=1)
-horizontal_button['state'] = 'disabled'
-vertical_button = tk.Button(fr_2, text="Vertical", height=2, width=10, command=setvertical)
-vertical_button.grid(row=5, column=0, padx=15, pady=1)
-vertical_button['state'] = 'disabled'
-reset_button = tk.Button(fr_2, text="Reset", height=2, width=10, command=resetshipposition)
-reset_button['state'] = 'disabled'
-reset_button.grid(row=6, column=0, padx=15, pady=5)
 fr_3 = tk.Frame(fr_lower, bg=bg_color)
 fr_3.grid(row=0, column=7, columnspan=5, padx=10)
 
@@ -406,7 +382,7 @@ fr_bottom.grid(row=11, column=0)
 # Statuses
 l_player = tk.Label(fr_bottom, text="Player's Ships", font=("Helvetica", 15), bg=bg_color, fg=player_color)
 l_enemy = tk.Label(fr_bottom, text=" Opponent's Ships", font=("Helvetica", 15), bg=bg_color, fg=player_color)
-l_game_name = tk.Label(fr_bottom, text="#@#>>>Sink The Ship<<<#@#", font=("Helvetica", 20), bg=bg_color,
+l_game_name = tk.Label(fr_bottom, text=">>>> SINK THE SHIP <<<<", font=("Times New Roman", 20), bg=bg_color,
                        fg=game_name_color)
 
 l_player.grid(row=0, column=0)
@@ -429,5 +405,6 @@ connection.start()
 
 # Display GUI
 root.resizable(width=False, height=False)
+root.bind("<space>", changeorientation)
 root.mainloop()
 os._exit(0)
