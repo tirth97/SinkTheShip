@@ -4,22 +4,25 @@ import os
 import threading
 import sys
 
-border_width = 10
-border_height = 10
-PLAYER = '1'
-ENEMY = '2'
+border_width = 10; border_height = 10
+PLAYER = '1'; ENEMY = '2'
+
 ready_flag = False
 BUFFER = 512
 ip_of_server = '127.0.0.1'
 port = 5250
+
 clientsocket = None
 shipsettleflag = 5
+
 buttons_player = []
 buttons_enemy = []
+
 ready_button = None
 l_game_status = None
 l_player_status = None
 l_enemy_status = None
+
 ship_locations = []  # Player's ships' locations
 direction = 'h'
 button_disable_flags = []
@@ -326,7 +329,7 @@ try:
     ip_of_server = "192.168.43.43"
     port = 5250
 except:
-    print "Please enter valid IP address and port number."
+    print "Unable to connect. IP or Port not available."
     sys.exit()
 
 # GUI rendering
@@ -369,7 +372,7 @@ disable_player_grid()
 fr_2 = tk.Frame(fr_lower, bg=bg_color)
 fr_2.grid(row=0, column=5, columnspan=2)
 
-ready_button = tk.Button(fr_2, text=" Ready ", height=3, width=12, command=send_ready)
+ready_button = tk.Button(fr_2, text="PLAY!", height=3, width=12, command=send_ready)
 ready_button.grid(row=0, column=0, rowspan=4, pady=100, padx=10)
 disable_ready()
 horizontal_button = tk.Button(fr_2, text="Horizontal", height=2, width=10, command=sethorizontal)
