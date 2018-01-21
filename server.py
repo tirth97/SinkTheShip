@@ -181,6 +181,7 @@ class Playground:
             t1.start(); t2.start(); t1.join(); t2.join()
             
             print "FINISH!"
+            sys.exit()
             
         except Exception as e:
             print e.message
@@ -188,15 +189,16 @@ class Playground:
 
 # Server runs continuously to serve multi-game functionality.
 try:
-    port = 5250
+    port = 50250
 except:
     print "Port busy. Try after sometime."
     sys.exit()
 try:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # creates a server which listens to port 5250
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # creates a server which listens to port 50250
     sock.bind(('0.0.0.0', port))
     sock.listen(8)
     print "server started.."
+    print "server running on " + str(socket.gethostbyname(socket.gethostname()))
     while True:
         g = Playground(sock)
 except Exception as e:

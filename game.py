@@ -311,8 +311,8 @@ def connect_to_server():
 
 
 try:
-    ip_of_server = " 172.16.16.184"
-    port = 5250
+    ip_of_server = "192.168.43.43"
+    port = 50250
 except:
     print "Unable to connect. IP or Port not available."
     sys.exit()
